@@ -1,20 +1,11 @@
 #!/bin/bash
 
 # We read from the input parameter the name of the client
-if [ -z "$1" ]
-  then 
-    read -p "Enter VPN user name: " USERNAME
-    if [ -z $USERNAME ]
-      then
-      echo "[#]Empty VPN user name. Exit"
-      exit 1;
-    fi
-  else USERNAME=$1
-fi
+read -p "Enter VPN user name: " USERNAME
 
-cd /etc/wireguard/
+cd /wq/keys/
 
-read DNS < ./dns.var
+read DNS < 127.0.0.1
 read ENDPOINT < ./endpoint.var
 read VPN_SUBNET < ./vpn_subnet.var
 PRESHARED_KEY="_preshared.key"
@@ -29,29 +20,24 @@ mkdir ./$USERNAME
 cd ./$USERNAME
 umask 077
 
-CLIENT_PRESHARED_KEY=$( wg genpsk )
-CLIENT_PRIVKEY=$( wg genkey )
-CLIENT_PUBLIC_KEY=$( echo $CLIENT_PRIVKEY | wg pubkey )
-
-#echo $CLIENT_PRESHARED_KEY > ./"$USERNAME$PRESHARED_KEY"
-#echo $CLIENT_PRIVKEY > ./"$USERNAME$PRIV_KEY"
-#echo $CLIENT_PUBLIC_KEY > ./"$USERNAME$PUB_KEY"
-
-read SERVER_PUBLIC_KEY < /etc/wireguard/server_public.key
+CLIENT_PRESHARED_KEY=`wg genpsk`
+CLIENT_PRIVKEY=`wg genkey`
+CLIENT_PUBLIC_KEY=`echo $CLIENT_PRIVKEY | wg pubkey`
+read SERVER_PUBLIC_KEY < /wg/keys/server_public.key
 
 # We get the following client IP address
-read OCTET_IP < /etc/wireguard/last_used_ip.var
+read OCTET_IP < /wg/keys/last_used_ip.var
 OCTET_IP=$(($OCTET_IP+1))
-echo $OCTET_IP > /etc/wireguard/last_used_ip.var
+echo $OCTET_IP > /wg/keys/last_used_ip.var
 
 CLIENT_IP="$VPN_SUBNET$OCTET_IP/32"
 
 # Create a blank configuration file client 
-cat > /etc/wireguard/clients/$USERNAME/$USERNAME.conf << EOF
+cat > /wg/keys/clients/$USERNAME/$USERNAME.conf << EOF
 [Interface]
 PrivateKey = $CLIENT_PRIVKEY
 Address = $CLIENT_IP
-DNS = $DNS
+DNS = 127.0.0.1
 
 
 [Peer]
@@ -63,7 +49,7 @@ PersistentKeepalive=25
 EOF
 
 # Add new client data to the Wireguard configuration file
-cat >> /etc/wireguard/wg0.conf << EOF
+cat >> /wg/keys/wg0.conf << EOF
 
 [Peer]
 PublicKey = $CLIENT_PUBLIC_KEY
