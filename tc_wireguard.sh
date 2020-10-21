@@ -24,6 +24,7 @@ else
     ENDPOINT=`curl -q ifconfig.me`:$USER_PORT
 fi
 echo "Your Endpoint IP/Port pair will be: $ENDPOINT"
+echo $ENDPOINT > ./endpoint.var
 #Determining the internal VPN subnet
 read -p "Enter yopur perfered internal server IP, (default: 10.11.12.1): " SERVER_IP
 if [ -z $SERVER_IP ]
@@ -32,6 +33,7 @@ fi
 echo "Your server IP will be: $SERVER_IP" 
 VPN_SUBNET=`echo $SERVER_IP | grep -o -E '([0-9]+\.){3}'`
 echo "your vpn subnet is $VPN_SUBNET"
+echo $VPN_SUBNET > ./vpn_subnet.var
 # download list of DNS root servers
 sudo curl -o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache
 # create Unbound config file
@@ -56,7 +58,7 @@ server:
     #hide DNS Server info
     hide-identity: yes
     hide-version: yes
-    # limit DNS fraud and use DNSSEC
+    # limit DNS fraud and use DNSSEC51
     harden-glue: yes
     harden-dnssec-stripped: yes
     harden-referral-path: yes
@@ -74,7 +76,7 @@ server:
 " | sudo tee /etc/unbound/unbound.conf 
 # give root ownership of the Unbound config
 sudo chown -R unbound:unbound /var/lib/unbound
-#echo 1 > ./last_used_ip.var
+echo 1 > ./last_used_ip.var
 #Taking out rhe Interface name
 read -p "Enter the name of the WAN network interface (default script will attempt to grab it): " WAN_INTERFACE_NAME
 if [ -z $WAN_INTERFACE_NAME ]
@@ -89,9 +91,10 @@ Address = $SERVER_IP
 SaveConfig = false
 PrivateKey = $SERVER_PRIVKEY
 ListenPort = $SERVER_EXTERNAL_PORT
-PostUp   = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o $WAN_INTERFACE_NAME -j MASQUERADE;
-PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o $WAN_INTERFACE_NAME -j MASQUERADE;
+PostUp   = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o $WAN_INTERFACE_NAME -j MASQUERADE;
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o $WAN_INTERFACE_NAME -j MASQUERADE;
 EOF
 done
+./tc_add_user.sh
 cp -f ./wg0.conf.def ./wg0.conf
 systemctl enable wg-quick@wg0
