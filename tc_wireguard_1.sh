@@ -46,6 +46,10 @@ then
   WAN_INTERFACE_NAME=`ip -o link show | awk -F ': ' '{print $2}' | grep -v lo | head -1`
 fi
 cat ./endpoint.var | sed -e "s/:/ /" | while read SERVER_EXTERNAL_IP SERVER_EXTERNAL_PORT
+echo "
+Server IP: $SERVER_EXTERNAL_IP
+Server Port: $SERVER_EXTERNAL_PORT
+"
 do
 cat > ./wg0.conf.bak << EOF
 [Interface]
