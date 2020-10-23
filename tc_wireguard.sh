@@ -34,6 +34,7 @@ echo "Your server IP will be: $SERVER_IP"
 VPN_SUBNET=`echo $SERVER_IP | grep -o -E '([0-9]+\.){3}'`
 echo "your vpn subnet is $VPN_SUBNET"
 echo $VPN_SUBNET > ./vpn_subnet.var
+echo $SERVER_IP > ./server_ip.var
 # download list of DNS root servers
 sudo curl -o /var/lib/unbound/root.hints https://www.internic.net/domain/named.cache
 # create Unbound config file
@@ -51,10 +52,10 @@ server:
     max-udp-size: 3072
     # IPs authorised to access the DNS Server
     access-control: 0.0.0.0/0                 refuse
-    access-control: 127.0.0.1                 allow
-    access-control: 10.200.200.0/24             allow
+    access-control: $SERVER_IP                 allow
+    access-control: $VPN_SUBNET'0/24'             allow
     # not allowed to be returned for public Internet  names
-    private-address: 10.200.200.0/24
+    private-address: $VPN_SUBNET'0/24'
     #hide DNS Server info
     hide-identity: yes
     hide-version: yes
@@ -76,6 +77,15 @@ server:
 " | sudo tee /etc/unbound/unbound.conf 
 # give root ownership of the Unbound config
 sudo chown -R unbound:unbound /var/lib/unbound
+#Updating Host File
+echo "127.0.0.1 localhost `hostname`" > /etc/hosts
+# disable systemd-resolved
+sudo systemctl stop systemd-resolved &&
+sudo systemctl disable systemd-resolved
+# enable Unbound in place of systemd-resovled
+sudo systemctl enable unbound-resolvconf &&
+sudo systemctl enable unbound
+
 echo 1 > ./last_used_ip.var
 #Taking out rhe Interface name
 read -p "Enter the name of the WAN network interface (default script will attempt to grab it): " WAN_INTERFACE_NAME
@@ -95,6 +105,5 @@ PostUp   = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -A FORWARD -o wg0 -j A
 PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -D FORWARD -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o $WAN_INTERFACE_NAME -j MASQUERADE;
 EOF
 done
-./tc_add_user.sh
-cp -f ./wg0.conf.def ./wg0.conf
+cp -f ./wg0.conf.bak /etc/wireguard/wg0.conf
 systemctl enable wg-quick@wg0
