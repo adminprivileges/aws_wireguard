@@ -89,7 +89,7 @@ if [ -z $WAN_INTERFACE_NAME ]
 then
   WAN_INTERFACE_NAME=`ip -o link show | awk -F ': ' '{print $2}' | grep -v lo | head -1`
 fi
-cat $ENDPOINT | sed -e "s/:/ /" | while read SERVER_EXTERNAL_IP SERVER_EXTERNAL_PORT
+cat ./endpoint.var | sed -e "s/:/ /" | while read SERVER_EXTERNAL_IP SERVER_EXTERNAL_PORT
 do
 cat > ./wg0.conf.bak << EOF
 [Interface]
