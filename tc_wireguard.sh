@@ -1,8 +1,4 @@
 #/bin/bash
-#Installing required packages
-apt update -y
-apt upgrade -y
-apt install wireguard qrencode unbound unbound-host curl -y
 #enable ipv4 forwarding
 sysctl -w  "net.ipv4.ip_forward=1"
 sed -i 's/\#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
