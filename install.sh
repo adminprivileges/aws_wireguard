@@ -1,5 +1,6 @@
 #/bin/bash
 #Installing required packages
+echo "Updating and installing required packages" 
 apt update -y
 apt upgrade -y
 apt install wireguard qrencode unbound unbound-host curl -y
