@@ -8,6 +8,7 @@ cd /wg/keys/
 read ENDPOINT < ./endpoint.var
 read VPN_SUBNET < ./vpn_subnet.var
 read SERVER_IP < ./server_ip.var
+read DNS < ./dns.var
 PRESHARED_KEY="_preshared.key"
 PRIV_KEY="_private.key"
 PUB_KEY="_public.key"
@@ -37,7 +38,7 @@ cat > /wg/keys/clients/$USERNAME/$USERNAME.conf << EOF
 [Interface]
 PrivateKey = $CLIENT_PRIVKEY
 Address = $CLIENT_IP
-DNS = $SERVER_IP
+DNS = $DNS
 
 
 [Peer]
