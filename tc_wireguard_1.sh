@@ -20,7 +20,7 @@ else
     ENDPOINT=`curl -q ifconfig.me`:$USER_PORT
 fi
 echo "Your Endpoint IP/Port pair will be: $ENDPOINT"
-echo $ENDPOINT > ./endpoint.var
+echo "$ENDPOINT" > ./endpoint.var
 #Determining the internal VPN subnet
 read -p "Enter yopur perfered internal server IP, (default: 10.11.12.1): " SERVER_IP
 if [ -z $SERVER_IP ]
@@ -45,8 +45,7 @@ if [ -z $WAN_INTERFACE_NAME ]
 then
   WAN_INTERFACE_NAME=`ip -o link show | awk -F ': ' '{print $2}' | grep -v lo | head -1`
 fi
-cat ./endpoint.var | sed -e "s/:/ /" | while read SERVER_EXTERNAL_IP SERVER_EXTERNAL_PORT
-echo " Server IP: $SERVER_EXTERNAL_IP Server Port: $SERVER_EXTERNAL_PORT "
+echo "$ENDPOINT" | sed -e "s/:/ /" | while read SERVER_EXTERNAL_IP SERVER_EXTERNAL_PORT
 do
 cat > ./wg0.conf.bak << EOF
 [Interface]
