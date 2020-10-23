@@ -76,11 +76,9 @@ sudo chown -R unbound:unbound /var/lib/unbound
 #Updating Host File
 echo "127.0.0.1 localhost `hostname`" > /etc/hosts
 # disable systemd-resolved
-sudo systemctl stop systemd-resolved &&
-sudo systemctl disable systemd-resolved
+sudo systemctl stop systemd-resolved && sudo systemctl disable systemd-resolved
 # enable Unbound in place of systemd-resovled
-sudo systemctl enable unbound-resolvconf &&
-sudo systemctl enable unbound
+sudo systemctl enable unbound-resolvconf && sudo systemctl enable unbound
 
 echo 1 > ./last_used_ip.var
 #Taking out rhe Interface name
