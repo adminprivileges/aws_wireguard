@@ -3,11 +3,11 @@
 # We read from the input parameter the name of the client
 read -p "Enter VPN user name: " USERNAME
 
-cd /wq/keys/
+cd /wg/keys/
 
-read DNS < 127.0.0.1
 read ENDPOINT < ./endpoint.var
 read VPN_SUBNET < ./vpn_subnet.var
+read SERVER_IP < ./server_ip.var
 PRESHARED_KEY="_preshared.key"
 PRIV_KEY="_private.key"
 PUB_KEY="_public.key"
@@ -37,7 +37,7 @@ cat > /wg/keys/clients/$USERNAME/$USERNAME.conf << EOF
 [Interface]
 PrivateKey = $CLIENT_PRIVKEY
 Address = $CLIENT_IP
-DNS = 127.0.0.1
+DNS = $SERVER_IP
 
 
 [Peer]
